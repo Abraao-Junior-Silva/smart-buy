@@ -22,6 +22,10 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
   }
 
+  bool validateNameWithoutNumbers(String text) {
+    return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
+  }
+
   bool validateCity(String text) {
     return RegExp(r'^[a-zA-Z ]+$').hasMatch(text);
   }
@@ -31,16 +35,10 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
   }
 
   bool validatePassword(String text) {
-    return RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$')
-        .hasMatch(text);
+    return RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$').hasMatch(text);
   }
 
-  bool validateNoSpecialCharacters(String text) {
-    return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
-  }
-
-  void onChangedValidatedText(String text, TextEditingController controller,
-      bool Function(String) validator) {
+  void onChangedValidatedText(String text, TextEditingController controller, bool Function(String) validator) {
     String validText = text;
     if (validator(text)) {
       controller.value = controller.value.copyWith(
@@ -54,8 +52,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     }
   }
 
-  void onChangedValidatedCity(String text, TextEditingController controller,
-      bool Function(String) validator) {
+  void onChangedValidatedCity(String text, TextEditingController controller, bool Function(String) validator) {
     if (validator(text)) {
       controller.value = controller.value.copyWith(
         text: text,
@@ -68,8 +65,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     }
   }
 
-  void onChangedValidatedPhone(String text, TextEditingController controller,
-      bool Function(String) validator) {
+  void onChangedValidatedPhone(String text, TextEditingController controller, bool Function(String) validator) {
     if (!validator(text)) {
       String validText = controller.text.replaceAll(RegExp(r'[^0-9]'), '');
       controller.value = controller.value.copyWith(
@@ -90,11 +86,9 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     bool hasSpecialCharacter = false;
 
     for (int i = 0; i < senha.length; i++) {
-      if (senha[i].toUpperCase() == senha[i] &&
-          senha[i].toLowerCase() != senha[i]) {
+      if (senha[i].toUpperCase() == senha[i] && senha[i].toLowerCase() != senha[i]) {
         hasUppercase = true;
-      } else if (senha[i].toLowerCase() == senha[i] &&
-          senha[i].toUpperCase() != senha[i]) {
+      } else if (senha[i].toLowerCase() == senha[i] && senha[i].toUpperCase() != senha[i]) {
         hasLowercase = true;
       } else if (int.tryParse(senha[i]) != null) {
         hasDigit = true;
@@ -220,8 +214,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(
-                            text, nomeController, validateNoSpecialCharacters);
+                        onChangedValidatedText(text, nomeController, validateNameWithoutNumbers);
                       },
                     ),
                   ),
@@ -237,8 +230,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(text, sobrenomeController,
-                            validateNoSpecialCharacters);
+                        onChangedValidatedText(text, sobrenomeController, validateNameWithoutNumbers);
                       },
                     ),
                   ),
@@ -275,8 +267,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedPhone(
-                            text, dataNascimentoController, validatePhone);
+                        onChangedValidatedPhone(text, dataNascimentoController, validatePhone);
                       },
                     ),
                   ),
@@ -300,8 +291,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedPhone(
-                            text, telefoneController, validatePhone);
+                        onChangedValidatedPhone(text, telefoneController, validatePhone);
                       },
                     ),
                   ),
@@ -317,8 +307,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedCity(text, cidadeController,
-                            validateNoSpecialCharacters);
+                        onChangedValidatedCity(text, cidadeController, validateCity);
                       },
                     ),
                   ),
@@ -344,9 +333,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                             });
                           },
                           child: Icon(
-                            obscureTextSenha
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            obscureTextSenha ? Icons.visibility : Icons.visibility_off,
                           ),
                         ),
                         border: OutlineInputBorder(
@@ -354,8 +341,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(
-                            text, senhaController, validatePassword);
+                        onChangedValidatedText(text, senhaController, validatePassword);
                         setState(() {
                           strength = calculatePasswordStrength(text);
                         });
@@ -373,14 +359,11 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         suffixIcon: GestureDetector(
                           onTap: () {
                             setState(() {
-                              obscureTextSenhaConfirmacao =
-                                  !obscureTextSenhaConfirmacao;
+                              obscureTextSenhaConfirmacao = !obscureTextSenhaConfirmacao;
                             });
                           },
                           child: Icon(
-                            obscureTextSenhaConfirmacao
-                                ? Icons.visibility
-                                : Icons.visibility_off,
+                            obscureTextSenhaConfirmacao ? Icons.visibility : Icons.visibility_off,
                           ),
                         ),
                         border: OutlineInputBorder(
@@ -388,8 +371,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(
-                            text, confirmacaoSenhaController, validatePassword);
+                        onChangedValidatedText(text, confirmacaoSenhaController, validatePassword);
                       },
                       obscureText: obscureTextSenhaConfirmacao,
                     ),
@@ -434,8 +416,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         backgroundColor: Colors.red,
                       ),
                     );
-                  } else if (senhaController.text ==
-                      confirmacaoSenhaController.text) {
+                  } else if (senhaController.text == confirmacaoSenhaController.text) {
                     showRegistroSucessoDialog();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
