@@ -22,51 +22,46 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
   }
 
+  bool validateCity(String text) {
+    return RegExp(r'^[a-zA-Z ]+$').hasMatch(text);
+  }
+
   bool validatePhone(String text) {
     return RegExp(r'^[0-9]+$').hasMatch(text);
   }
 
   bool validatePassword(String text) {
-    return RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]*$')
+    return RegExp(r'^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[\W_]).{8,}$')
         .hasMatch(text);
   }
 
-  int passwordStrength(String text) {
-    // Adicione sua lógica de força de senha aqui
-    // Esta é apenas uma lógica de exemplo, você pode personalizar conforme necessário
-    if (text.length < 6) {
-      return 0; // Senha fraca
-    } else if (text.length < 10) {
-      return 1; // Senha média
-    } else {
-      return 2; // Senha forte
-    }
-  }
-
-  Color getPasswordStrengthColor(String text) {
-    int strength = passwordStrength(text);
-    switch (strength) {
-      case 0:
-        return Colors.red;
-      case 1:
-        return Colors.amber;
-      case 2:
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+  bool validateNoSpecialCharacters(String text) {
+    return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
   }
 
   void onChangedValidatedText(String text, TextEditingController controller,
       bool Function(String) validator) {
-    // Mantive a lógica original para aceitar apenas letras
-    if (!validator(text)) {
-      String validText = text.replaceAll(RegExp(r'[^a-zA-Z]'), '');
+    String validText = text;
+    if (validator(text)) {
       controller.value = controller.value.copyWith(
         text: validText,
         selection: TextSelection(
           baseOffset: validText.length,
           extentOffset: validText.length,
+        ),
+        composing: TextRange.empty,
+      );
+    }
+  }
+
+  void onChangedValidatedCity(String text, TextEditingController controller,
+      bool Function(String) validator) {
+    if (validator(text)) {
+      controller.value = controller.value.copyWith(
+        text: text,
+        selection: TextSelection(
+          baseOffset: text.length,
+          extentOffset: text.length,
         ),
         composing: TextRange.empty,
       );
@@ -76,7 +71,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
   void onChangedValidatedPhone(String text, TextEditingController controller,
       bool Function(String) validator) {
     if (!validator(text)) {
-      String validText = text.replaceAll(RegExp(r'[^0-9]'), '');
+      String validText = controller.text.replaceAll(RegExp(r'[^0-9]'), '');
       controller.value = controller.value.copyWith(
         text: validText,
         selection: TextSelection(
@@ -86,6 +81,86 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
         composing: TextRange.empty,
       );
     }
+  }
+
+  PasswordStrength calculatePasswordStrength(String senha) {
+    bool hasUppercase = false;
+    bool hasLowercase = false;
+    bool hasDigit = false;
+    bool hasSpecialCharacter = false;
+
+    for (int i = 0; i < senha.length; i++) {
+      if (senha[i].toUpperCase() == senha[i] &&
+          senha[i].toLowerCase() != senha[i]) {
+        hasUppercase = true;
+      } else if (senha[i].toLowerCase() == senha[i] &&
+          senha[i].toUpperCase() != senha[i]) {
+        hasLowercase = true;
+      } else if (int.tryParse(senha[i]) != null) {
+        hasDigit = true;
+      } else {
+        hasSpecialCharacter = true;
+      }
+    }
+
+    if (senha.length >= 8) {
+      if (hasUppercase && hasLowercase && hasDigit && hasSpecialCharacter) {
+        return PasswordStrength.Strong;
+      } else if ((hasUppercase || hasLowercase) && hasDigit) {
+        return PasswordStrength.Medium;
+      }
+    }
+
+    return PasswordStrength.Weak;
+  }
+
+  Color getStrengthColor(PasswordStrength strength) {
+    switch (strength) {
+      case PasswordStrength.Weak:
+        return Colors.red;
+      case PasswordStrength.Medium:
+        return Colors.amber;
+      case PasswordStrength.Strong:
+        return Colors.green;
+    }
+  }
+
+  void showRegistroSucessoDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Registro Concluído',
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 50),
+              SizedBox(height: 20),
+              Text(
+                'Seu registro foi concluído com sucesso!',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -146,7 +221,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                       ),
                       onChanged: (text) {
                         onChangedValidatedText(
-                            text, nomeController, validateName);
+                            text, nomeController, validateNoSpecialCharacters);
                       },
                     ),
                   ),
@@ -162,8 +237,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(
-                            text, sobrenomeController, validateName);
+                        onChangedValidatedText(text, sobrenomeController,
+                            validateNoSpecialCharacters);
                       },
                     ),
                   ),
@@ -242,8 +317,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(
-                            text, cidadeController, validateName);
+                        onChangedValidatedCity(text, cidadeController,
+                            validateNoSpecialCharacters);
                       },
                     ),
                   ),
@@ -262,22 +337,30 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                       decoration: InputDecoration(
                         labelText: "Senha",
                         prefixIcon: Icon(Icons.lock),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              obscureTextSenha = !obscureTextSenha;
+                            });
+                          },
+                          child: Icon(
+                            obscureTextSenha
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                       ),
                       onChanged: (text) {
-                        // Alterei a função de validação da senha
-                        senhaController.value = senhaController.value.copyWith(
-                          text: text,
-                          selection: TextSelection(
-                            baseOffset: text.length,
-                            extentOffset: text.length,
-                          ),
-                          composing: TextRange.empty,
-                        );
+                        onChangedValidatedText(
+                            text, senhaController, validatePassword);
+                        setState(() {
+                          strength = calculatePasswordStrength(text);
+                        });
                       },
-                      obscureText: false, // Alterado para exibir a senha
+                      obscureText: obscureTextSenha,
                     ),
                   ),
                   SizedBox(width: 15),
@@ -287,62 +370,81 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                       decoration: InputDecoration(
                         labelText: "Confirmação da Senha",
                         prefixIcon: Icon(Icons.lock),
+                        suffixIcon: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              obscureTextSenhaConfirmacao =
+                                  !obscureTextSenhaConfirmacao;
+                            });
+                          },
+                          child: Icon(
+                            obscureTextSenhaConfirmacao
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                       ),
                       onChanged: (text) {
-                        // Alterei a função de validação da senha
-                        confirmacaoSenhaController.value =
-                            confirmacaoSenhaController.value.copyWith(
-                          text: text,
-                          selection: TextSelection(
-                            baseOffset: text.length,
-                            extentOffset: text.length,
-                          ),
-                          composing: TextRange.empty,
-                        );
+                        onChangedValidatedText(
+                            text, confirmacaoSenhaController, validatePassword);
                       },
-                      obscureText: false, // Alterado para exibir a senha
+                      obscureText: obscureTextSenhaConfirmacao,
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 15),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Força da Senha: ",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
+            SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                3,
+                (index) => Container(
+                  width: 60,
+                  height: 15,
+                  margin: EdgeInsets.only(right: index < 2 ? 20 : 0),
+                  decoration: BoxDecoration(
+                    color: getStrengthColor(strength),
+                    borderRadius: BorderRadius.circular(5),
                   ),
-                  Container(
-                    width: 100,
-                    height: 10,
-                    color: getPasswordStrengthColor(senhaController.text),
-                  ),
-                ],
+                ),
               ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 20),
             Container(
               width: double.infinity,
               height: 50.0,
               padding: EdgeInsets.symmetric(horizontal: 100),
               child: ElevatedButton(
                 onPressed: () {
-                  // Adicione aqui a lógica para lidar com o clique no botão "Concluir"
-                  // Você pode validar os campos e realizar ações adicionais
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => LoginPage()),
-                  );
+                  if (nomeController.text.isEmpty ||
+                      sobrenomeController.text.isEmpty ||
+                      emailController.text.isEmpty ||
+                      dataNascimentoController.text.isEmpty ||
+                      telefoneController.text.isEmpty ||
+                      cidadeController.text.isEmpty ||
+                      senhaController.text.isEmpty ||
+                      confirmacaoSenhaController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Há campos que não foram preenchidos."),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  } else if (senhaController.text ==
+                      confirmacaoSenhaController.text) {
+                    showRegistroSucessoDialog();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("As senhas não coincidem."),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   primary: Color(0xFFE87C17),
@@ -364,3 +466,13 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     );
   }
 }
+
+enum PasswordStrength {
+  Weak,
+  Medium,
+  Strong,
+}
+
+bool obscureTextSenha = true;
+bool obscureTextSenhaConfirmacao = true;
+PasswordStrength strength = PasswordStrength.Weak;
