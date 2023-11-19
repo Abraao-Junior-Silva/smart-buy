@@ -16,6 +16,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
   TextEditingController dataNascimentoController = TextEditingController();
   TextEditingController telefoneController = TextEditingController();
   TextEditingController senhaController = TextEditingController();
+  TextEditingController confirmacaoSenhaController = TextEditingController();
 
   bool validateName(String text) {
     return RegExp(r'^[a-zA-Z]+$').hasMatch(text);
@@ -25,23 +26,63 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
     return RegExp(r'^[0-9]+$').hasMatch(text);
   }
 
-  void onChangedValidatedText(String text, TextEditingController controller, bool Function(String) validator) {
+  bool validatePassword(String text) {
+    return RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]*$')
+        .hasMatch(text);
+  }
+
+  int passwordStrength(String text) {
+    // Adicione sua lógica de força de senha aqui
+    // Esta é apenas uma lógica de exemplo, você pode personalizar conforme necessário
+    if (text.length < 6) {
+      return 0; // Senha fraca
+    } else if (text.length < 10) {
+      return 1; // Senha média
+    } else {
+      return 2; // Senha forte
+    }
+  }
+
+  Color getPasswordStrengthColor(String text) {
+    int strength = passwordStrength(text);
+    switch (strength) {
+      case 0:
+        return Colors.red;
+      case 1:
+        return Colors.amber;
+      case 2:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void onChangedValidatedText(String text, TextEditingController controller,
+      bool Function(String) validator) {
+    // Mantive a lógica original para aceitar apenas letras
     if (!validator(text)) {
-      String validText = text.replaceAll(RegExp(r'[^a-zA-Z]'), ''); // Mantém apenas letras
+      String validText = text.replaceAll(RegExp(r'[^a-zA-Z]'), '');
       controller.value = controller.value.copyWith(
         text: validText,
-        selection: TextSelection(baseOffset: validText.length, extentOffset: validText.length),
+        selection: TextSelection(
+          baseOffset: validText.length,
+          extentOffset: validText.length,
+        ),
         composing: TextRange.empty,
       );
     }
   }
 
-  void onChangedValidatedPhone(String text, TextEditingController controller, bool Function(String) validator) {
+  void onChangedValidatedPhone(String text, TextEditingController controller,
+      bool Function(String) validator) {
     if (!validator(text)) {
-      String validText = text.replaceAll(RegExp(r'[^0-9]'), ''); // Mantém apenas números
+      String validText = text.replaceAll(RegExp(r'[^0-9]'), '');
       controller.value = controller.value.copyWith(
         text: validText,
-        selection: TextSelection(baseOffset: validText.length, extentOffset: validText.length),
+        selection: TextSelection(
+          baseOffset: validText.length,
+          extentOffset: validText.length,
+        ),
         composing: TextRange.empty,
       );
     }
@@ -94,7 +135,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: nomeController,
                       decoration: InputDecoration(
                         labelText: "Nome",
@@ -104,13 +145,14 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(text, nomeController, validateName);
+                        onChangedValidatedText(
+                            text, nomeController, validateName);
                       },
                     ),
                   ),
                   SizedBox(width: 15),
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: sobrenomeController,
                       decoration: InputDecoration(
                         labelText: "Sobrenome",
@@ -120,7 +162,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(text, sobrenomeController, validateName);
+                        onChangedValidatedText(
+                            text, sobrenomeController, validateName);
                       },
                     ),
                   ),
@@ -134,7 +177,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: emailController,
                       decoration: InputDecoration(
                         labelText: "E-mail",
@@ -147,7 +190,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                   ),
                   SizedBox(width: 15),
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: dataNascimentoController,
                       decoration: InputDecoration(
                         labelText: "Data de Nascimento",
@@ -157,7 +200,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedPhone(text, dataNascimentoController, validatePhone);
+                        onChangedValidatedPhone(
+                            text, dataNascimentoController, validatePhone);
                       },
                     ),
                   ),
@@ -171,7 +215,7 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: telefoneController,
                       decoration: InputDecoration(
                         labelText: "Telefone",
@@ -181,13 +225,14 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedPhone(text, telefoneController, validatePhone);
+                        onChangedValidatedPhone(
+                            text, telefoneController, validatePhone);
                       },
                     ),
                   ),
                   SizedBox(width: 15),
                   Flexible(
-                    child: TextField(
+                    child: TextFormField(
                       controller: cidadeController,
                       decoration: InputDecoration(
                         labelText: "Cidade",
@@ -197,7 +242,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                         ),
                       ),
                       onChanged: (text) {
-                        onChangedValidatedText(text, cidadeController, validateName);
+                        onChangedValidatedText(
+                            text, cidadeController, validateName);
                       },
                     ),
                   ),
@@ -210,8 +256,8 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: TextField(
+                  Flexible(
+                    child: TextFormField(
                       controller: senhaController,
                       decoration: InputDecoration(
                         labelText: "Senha",
@@ -220,7 +266,66 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
                           borderRadius: BorderRadius.circular(30.0),
                         ),
                       ),
+                      onChanged: (text) {
+                        // Alterei a função de validação da senha
+                        senhaController.value = senhaController.value.copyWith(
+                          text: text,
+                          selection: TextSelection(
+                            baseOffset: text.length,
+                            extentOffset: text.length,
+                          ),
+                          composing: TextRange.empty,
+                        );
+                      },
+                      obscureText: false, // Alterado para exibir a senha
                     ),
+                  ),
+                  SizedBox(width: 15),
+                  Flexible(
+                    child: TextFormField(
+                      controller: confirmacaoSenhaController,
+                      decoration: InputDecoration(
+                        labelText: "Confirmação da Senha",
+                        prefixIcon: Icon(Icons.lock),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                        ),
+                      ),
+                      onChanged: (text) {
+                        // Alterei a função de validação da senha
+                        confirmacaoSenhaController.value =
+                            confirmacaoSenhaController.value.copyWith(
+                          text: text,
+                          selection: TextSelection(
+                            baseOffset: text.length,
+                            extentOffset: text.length,
+                          ),
+                          composing: TextRange.empty,
+                        );
+                      },
+                      obscureText: false, // Alterado para exibir a senha
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 15),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Força da Senha: ",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Container(
+                    width: 100,
+                    height: 10,
+                    color: getPasswordStrengthColor(senhaController.text),
                   ),
                 ],
               ),
@@ -229,10 +334,11 @@ class _CadastrarUsuarioState extends State<CadastrarUsuario> {
             Container(
               width: double.infinity,
               height: 50.0,
-              padding: EdgeInsets.symmetric(
-                  horizontal: 100),
+              padding: EdgeInsets.symmetric(horizontal: 100),
               child: ElevatedButton(
                 onPressed: () {
+                  // Adicione aqui a lógica para lidar com o clique no botão "Concluir"
+                  // Você pode validar os campos e realizar ações adicionais
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(builder: (context) => LoginPage()),
